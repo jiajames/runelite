@@ -33,7 +33,10 @@ import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
+<<<<<<< HEAD
 import net.runelite.client.events.ConfigChanged;
+=======
+>>>>>>> my stuff
 import net.runelite.client.flexo.Flexo;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
