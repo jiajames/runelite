@@ -26,7 +26,7 @@
  */
 
 /*
-Modified java.awt.Robot for use with openosrs. Hopefully we can make it stand far apart.
+Modified java.awt.Robot for use with RuneLitePlus. Hopefully we can make it stand far apart.
 Uses
 https://github.com/JoonasVali/NaturalMouseMotion
 for mouse motion.
@@ -111,7 +111,8 @@ public class Flexo extends Robot
 		try
 		{
 			//TODO: Must be better way to determine titlebar width
-			currentMouseMotionFactory.build(ClientUI.frame.getX() + x + determineHorizontalOffset(), ClientUI.frame.getY() + y + determineVerticalOffset()).move();
+			currentMouseMotionFactory.build(ClientUI.frame.getX() + x + determineHorizontalOffset(),
+				ClientUI.frame.getY() + y + determineVerticalOffset()).move();
 			this.delay(getMinDelay());
 		}
 		catch (InterruptedException e)
@@ -145,16 +146,20 @@ public class Flexo extends Robot
 		this.delay(getMinDelay());
 	}
 
-	public synchronized void mousePressAndRelease(int buttonID)
-	{
-		if (buttonID < 1 || buttonID > 5)
-		{
+	public synchronized void mousePressAndRelease(int buttonID) {
+		if (buttonID < 1 || buttonID > 5) {
 			Logger.getAnonymousLogger().warning("Invalid mouse button ID. please use 1-5.");
 			return;
 		}
-		peer.mousePress(InputEvent.getMaskForButton(buttonID));
+		int button;
+		if (buttonID == 1) {
+			button = InputEvent.BUTTON1_DOWN_MASK;
+		} else {
+			button = InputEvent.getMaskForButton(buttonID);
+		}
+		peer.mousePress(button);
 		this.delay(getMinDelay());
-		peer.mouseRelease(InputEvent.getMaskForButton(buttonID));
+		peer.mouseRelease(button);
 		this.delay(getMinDelay());
 	}
 
