@@ -3,7 +3,7 @@
  * All rights reserved.
  * Licensed under GPL3, see LICENSE for the full scope.
  */
-package net.runelite.client.plugins.itemdropper;
+package net.runelite.client.plugins.ItemDropper;
 
 import com.google.inject.Provides;
 import java.util.ArrayList;
@@ -25,8 +25,10 @@ import net.runelite.client.menus.MenuManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.PluginType;
-import static net.runelite.client.plugins.itemdropper.ExtUtils.getItems;
-import static net.runelite.client.plugins.itemdropper.ExtUtils.stringToIntArray;
+import static net.runelite.client.plugins.ItemDropper.ExtUtils.getItems;
+import static net.runelite.client.plugins.ItemDropper.ExtUtils.stringToIntArray;
+import net.runelite.client.plugins.ItemDropper.ExtUtils;
+import net.runelite.client.plugins.ItemDropper.ItemDropperConfig;
 import net.runelite.client.plugins.stretchedmode.StretchedModeConfig;
 import net.runelite.client.util.HotkeyListener;
 
