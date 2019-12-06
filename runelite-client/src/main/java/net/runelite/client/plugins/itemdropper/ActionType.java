@@ -3,7 +3,7 @@
  * All rights reserved.
  * Licensed under GPL3, see LICENSE for the full scope.
  */
-package net.runelite.client.plugins.itemdropper;
+package net.runelite.client.plugins.ItemDropper;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
