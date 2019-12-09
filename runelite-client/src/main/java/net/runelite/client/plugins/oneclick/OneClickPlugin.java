@@ -112,6 +112,7 @@ public class OneClickPlugin extends Plugin
 	private boolean buildLarder;
 	private boolean removeLarder;
 	private boolean talkedToButler;
+	private Random r = new Random();
 
 	@Provides
 	OneClickConfig provideConfig(ConfigManager configManager)
@@ -165,27 +166,29 @@ public class OneClickPlugin extends Plugin
 		System.out.println(event); // BUILD: 458, REMOVE: 219
 		if (event.getGroupId() == 458 && buildLarder)
 		{
-			Random r = new Random();
-			flexo.delay(r.nextInt((600 - 300 + 1) + 300));
-			flexo.keyPress(KeyEvent.VK_2);
-			buildLarder = false;
+			executorService.submit(() ->
+			{
+				flexo.delay(r.nextInt((400 - 200 + 1) + 200));
+				flexo.keyPress(KeyEvent.VK_2);
+				buildLarder = false;
+			});
 		}
 		else if (event.getGroupId() == 219 && removeLarder)
 		{
-			Random r = new Random();
-			flexo.delay(r.nextInt((600 - 300 + 1) + 300));
-			flexo.keyPress(KeyEvent.VK_1);
-			removeLarder = false;
+			executorService.submit(() ->
+			{
+				flexo.delay(r.nextInt((400 - 200 + 1) + 200));
+				flexo.keyPress(KeyEvent.VK_1);
+				removeLarder = false;
+			});
 		}
 		else if (event.getGroupId() == 219 && talkedToButler)
 		{
-			Random r = new Random();
 			flexo.delay(r.nextInt((500 - 300 + 1) + 300));
 			flexo.keyPress(KeyEvent.VK_1);
 		}
 		else if (event.getGroupId() == 231 && talkedToButler)
 		{
-			Random r = new Random();
 			flexo.delay(r.nextInt((500 - 300 + 1) + 300));
 			flexo.keyPress(KeyEvent.VK_SPACE);
 		}
@@ -630,11 +633,11 @@ public class OneClickPlugin extends Plugin
 				{
 					removeLarder = true;
 				}
-				else if (option.equals("Talk-to") && target.contains("Demon butler"))
-				{
-					System.out.println("clicked on demon butler!");
-					talkedToButler = true;
-				}
+//				else if (option.equals("Talk-to") && target.contains("Demon butler"))
+//				{
+//					System.out.println("clicked on demon butler!");
+//					talkedToButler = true;
+//				}
 				break;
 		}
 	}
