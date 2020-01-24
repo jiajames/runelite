@@ -3,7 +3,7 @@
  * All rights reserved.
  * Licensed under GPL3, see LICENSE for the full scope.
  */
-package net.runelite.client.plugins.externals.itemdropper;
+package net.runelite.client.plugins.autominer;
 
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +41,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static net.runelite.client.plugins.externals.itemdropper.ExtUtils.stringToIntArray;
-
-import net.runelite.client.plugins.externals.itemdropper.ItemDropperConfig;
+import net.runelite.client.plugins.autominer.AutoMinerConfig;
 import net.runelite.client.plugins.externals.itemdropper.ExtUtils;
 
 @PluginDescriptor(
@@ -54,14 +52,14 @@ import net.runelite.client.plugins.externals.itemdropper.ExtUtils;
 )
 @Slf4j
 @SuppressWarnings("unused")
-public class ItemDropper extends Plugin
+public class AutoMiner extends Plugin
 {
 	@Inject
 	private Client client;
 	@Inject
 	private ConfigManager configManager;
 	@Inject
-	private ItemDropperConfig config;
+	private AutoMinerConfig config;
 	@Inject
 	private KeyManager keyManager;
 	@Inject
@@ -96,9 +94,9 @@ public class ItemDropper extends Plugin
 	};
 
 	@Provides
-	ItemDropperConfig provideConfig(ConfigManager configManager)
+	AutoMinerConfig provideConfig(ConfigManager configManager)
 	{
-		return configManager.getConfig(ItemDropperConfig.class);
+		return configManager.getConfig(AutoMinerConfig.class);
 	}
 
 	@Override
@@ -127,7 +125,7 @@ public class ItemDropper extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (!event.getGroup().equals("ItemDropperConfig"))
+		if (!event.getGroup().equals("AutoMinerConfig"))
 		{
 			return;
 		}
@@ -248,7 +246,7 @@ public class ItemDropper extends Plugin
 	{
 		ids.clear();
 
-		for (int i : stringToIntArray(config.items()))
+		for (int i : ExtUtils.stringToIntArray(config.items()))
 		{
 			ids.add(i);
 		}
