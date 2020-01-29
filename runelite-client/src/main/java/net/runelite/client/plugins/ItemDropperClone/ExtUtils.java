@@ -3,12 +3,14 @@
  * All rights reserved.
  * Licensed under GPL3, see LICENSE for the full scope.
  */
-package net.runelite.client.plugins.externals.itemdropper;
+package net.runelite.client.plugins.ItemDropperClone;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
@@ -17,8 +19,7 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.flexo.Flexo;
-
-import net.runelite.client.plugins.externals.itemdropper.ActionType;
+import net.runelite.client.plugins.ItemDropperClone.ActionType;
 
 @Slf4j
 public class ExtUtils
@@ -101,7 +102,7 @@ public class ExtUtils
 					{
 						flexo.mouseMove(cp.getX(), cp.getY());
 					}
-//					flexo.mousePressAndRelease(1);
+					//flexo.mousePressAndRelease(1);
 					leftClick(cp.getX(), cp.getY(), client, scalingfactor);
 					break;
 				case MOUSEEVENTS:
@@ -115,34 +116,6 @@ public class ExtUtils
 		}
 	}
 
-	private static void pauseMS(int delayMS)
-	{
-		long initialMS = System.currentTimeMillis();
-		while (System.currentTimeMillis() < initialMS + delayMS)
-		{
-			try
-			{
-				Thread.sleep(10);
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private static int getMinDelay()
-	{
-		int minDelay = 45;
-		Random random = new Random();
-		int random1 = random.nextInt(minDelay);
-		if (random1 < minDelay / 2)
-		{
-			random1 = random.nextInt(minDelay / 2) + minDelay / 2 + random.nextInt(minDelay / 2);
-		}
-		return random1;
-	}
-
 	public static void leftClick(int x, int y, Client client, double scalingFactor)
 	{
 		if (client.isStretchedEnabled())
@@ -150,29 +123,25 @@ public class ExtUtils
 			double scale = 1 + (scalingFactor / 100);
 
 			MouseEvent mousePressed =
-				new MouseEvent(client.getCanvas(), 501, System.currentTimeMillis(), 0, (int) (client.getMouseCanvasPosition().getX() * scale), (int) (client.getMouseCanvasPosition().getY() * scale), 1, false, 1);
+					new MouseEvent(client.getCanvas(), 501, System.currentTimeMillis(), 0, (int) (client.getMouseCanvasPosition().getX() * scale), (int) (client.getMouseCanvasPosition().getY() * scale), 1, false, 1);
 			client.getCanvas().dispatchEvent(mousePressed);
-			pauseMS(getMinDelay());
 			MouseEvent mouseReleased =
-				new MouseEvent(client.getCanvas(), 502, System.currentTimeMillis(), 0, (int) (client.getMouseCanvasPosition().getX() * scale), (int) (client.getMouseCanvasPosition().getY() * scale), 1, false, 1);
+					new MouseEvent(client.getCanvas(), 502, System.currentTimeMillis(), 0, (int) (client.getMouseCanvasPosition().getX() * scale), (int) (client.getMouseCanvasPosition().getY() * scale), 1, false, 1);
 			client.getCanvas().dispatchEvent(mouseReleased);
-			pauseMS(getMinDelay());
 			MouseEvent mouseClicked =
-				new MouseEvent(client.getCanvas(), 500, System.currentTimeMillis(), 0, (int) (client.getMouseCanvasPosition().getX() * scale), (int) (client.getMouseCanvasPosition().getY() * scale), 1, false, 1);
+					new MouseEvent(client.getCanvas(), 500, System.currentTimeMillis(), 0, (int) (client.getMouseCanvasPosition().getX() * scale), (int) (client.getMouseCanvasPosition().getY() * scale), 1, false, 1);
 			client.getCanvas().dispatchEvent(mouseClicked);
 		}
 		if (!client.isStretchedEnabled())
 		{
 			MouseEvent mousePressed =
-				new MouseEvent(client.getCanvas(), 501, System.currentTimeMillis(), 0, client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY(), 1, false, 1);
+					new MouseEvent(client.getCanvas(), 501, System.currentTimeMillis(), 0, client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY(), 1, false, 1);
 			client.getCanvas().dispatchEvent(mousePressed);
-			pauseMS(getMinDelay());
 			MouseEvent mouseReleased =
-				new MouseEvent(client.getCanvas(), 502, System.currentTimeMillis(), 0, client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY(), 1, false, 1);
+					new MouseEvent(client.getCanvas(), 502, System.currentTimeMillis(), 0, client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY(), 1, false, 1);
 			client.getCanvas().dispatchEvent(mouseReleased);
-			pauseMS(getMinDelay());
 			MouseEvent mouseClicked =
-				new MouseEvent(client.getCanvas(), 500, System.currentTimeMillis(), 0, client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY(), 1, false, 1);
+					new MouseEvent(client.getCanvas(), 500, System.currentTimeMillis(), 0, client.getMouseCanvasPosition().getX(), client.getMouseCanvasPosition().getY(), 1, false, 1);
 			client.getCanvas().dispatchEvent(mouseClicked);
 		}
 	}

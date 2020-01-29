@@ -7,10 +7,10 @@ package net.runelite.client.plugins.autominer;
 
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Client;
-import net.runelite.api.GameState;
-import net.runelite.api.InventoryID;
-import net.runelite.api.Item;
+import net.runelite.api.*;
+import net.runelite.api.Point;
+import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -21,6 +21,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.flexo.Flexo;
+import net.runelite.client.flexo.FlexoMouse;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.menus.MenuManager;
@@ -32,20 +33,18 @@ import net.runelite.client.util.HotkeyListener;
 
 import javax.inject.Inject;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import net.runelite.client.plugins.autominer.AutoMinerConfig;
-import net.runelite.client.plugins.externals.itemdropper.ExtUtils;
+import net.runelite.client.plugins.autominer.ExtUtils;
+import static net.runelite.api.ObjectID.*;
 
 @PluginDescriptor(
-	name = "Item Dropper",
+	name = "Auto Miner",
 	description = "Drops selected items for you.",
 	tags = {"item", "drop", "dropper", "bot"},
 	type = PluginType.EXTERNAL
@@ -74,22 +73,50 @@ public class AutoMiner extends Plugin
 	private boolean iterating;
 	private int iterTicks;
 
+	private boolean hotkeyOn;
+	private int inventoryItemCount;
+	private WorldPoint startingPoint;
+	private Random rand = new Random();
+	private int waitTicks;
+
 	private Flexo flexo;
 	private BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(1);
 	private ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 25, TimeUnit.SECONDS, queue,
 		new ThreadPoolExecutor.DiscardPolicy());
+
+	public int[] IRON = new int[]{ROCKS_11364, ROCKS_11365, ROCKS_36203};
 
 	private final HotkeyListener toggle = new HotkeyListener(() -> config.toggle())
 	{
 		@Override
 		public void hotkeyPressed()
 		{
-			List<WidgetItem> list = new InventoryWidgetItemQuery()
-				.idEquals(ids)
-				.result(client)
-				.list;
+			hotkeyOn = !hotkeyOn;
+			log.info("hotkey is now " + hotkeyOn);
 
-			items.addAll(list);
+			Item[] items = client.getItemContainer(InventoryID.INVENTORY).getItems();
+			if (items == null)
+			{
+				inventoryItemCount = 0;
+			}
+			else {
+				log.info("items length is " + items.length);
+				inventoryItemCount = items.length;
+			}
+
+			if (hotkeyOn) {
+				log.info("getting starting point");
+				startingPoint = client.getLocalPlayer().getWorldLocation();
+			}
+			else {
+				startingPoint = null;
+			}
+//			List<WidgetItem> list = new InventoryWidgetItemQuery()
+//				.idEquals(ids)
+//				.result(client)
+//				.list;
+//
+//			items.addAll(list);
 		}
 	};
 
@@ -113,6 +140,9 @@ public class AutoMiner extends Plugin
 			e.printStackTrace();
 		}
 		updateConfig();
+		hotkeyOn = false;
+		waitTicks = 0;
+		log.info("startup");
 	}
 
 	@Override
@@ -133,32 +163,109 @@ public class AutoMiner extends Plugin
 		updateConfig();
 	}
 
+	private GameObject pickGameObject(int[] ids) {
+		List<GameObject> objects = new ArrayList<>();
+		Tile[][] tiles = client.getScene().getTiles()[client.getPlane()];
+		for (int x = 0; x < Constants.SCENE_SIZE; ++x) {
+			for (int y = 0; y < Constants.SCENE_SIZE; ++y) {
+				Tile curTile = tiles[x][y];
+				if (curTile == null)
+					continue;
+				GameObject[] tileObjects = curTile.getGameObjects();
+				for (GameObject object : tileObjects) {
+					if (object != null) {
+						for (int id : ids) {
+							if (object.getId() == id) {
+								if (startingPoint.distanceTo(curTile.getWorldLocation()) <= 2)
+									objects.add(object);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		log.info("" + objects.size());
+		return objects.get(rand.nextInt(objects.size()));
+	}
+
+	private Rectangle centerBounds(Rectangle clickArea)
+	{
+		clickArea.x += clickArea.getWidth() / 2;
+		clickArea.y += clickArea.getHeight() / 2;
+
+		return clickArea;
+	}
+
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
-		if (items.isEmpty())
+		log.info("game tick");
+		if (!hotkeyOn)
 		{
-			if (iterating)
-			{
-				iterTicks++;
-				if (iterTicks > 20)
-				{
-					iterating = false;
-					clearNames();
-				}
-			}
-			else
-			{
-				if (iterTicks > 0)
-				{
-					iterTicks = 0;
-				}
-			}
+			log.info("hotkey is off");
 			return;
 		}
 
-		dropItems(items);
-		items.clear();
+		if (startingPoint == null)
+		{
+			log.info("starting point is null");
+			return;
+		}
+
+		WorldPoint curPoint = client.getLocalPlayer().getWorldLocation();
+		if (curPoint.getX() != startingPoint.getX() || curPoint.getY() != startingPoint.getY())
+		{
+			log.info("character has moved since script started");
+			return;
+		}
+
+		if (inventoryItemCount >= 28)
+		{
+			log.info("inventory is full");
+			return;
+		}
+
+		GameObject rock = pickGameObject(IRON);
+		Rectangle rect = rock.getConvexHull().getBounds();
+		rect = centerBounds(FlexoMouse.getClickArea(rect));
+		log.info(rect.x + " " + rect.y);
+
+		waitTicks++;
+		if (waitTicks > 5)
+		{
+			ExtUtils.handleSwitch(
+					rect,
+					config.actionType(),
+					flexo,
+					client,
+					configManager.getConfig(StretchedModeConfig.class).scalingFactor()
+			);
+			waitTicks = 0;
+		}
+//		if (items.isEmpty())
+//		{
+//			if (iterating)
+//			{
+//				iterTicks++;
+//				if (iterTicks > 20)
+//				{
+//					iterating = false;
+//					clearNames();
+//				}
+//			}
+//			else
+//			{
+//				if (iterTicks > 0)
+//				{
+//					iterTicks = 0;
+//				}
+//			}
+//			return;
+//		}
+
+		//dropItems(items);
+		//items.clear();
 	}
 
 	@Subscribe
@@ -170,6 +277,17 @@ public class AutoMiner extends Plugin
 		}
 
 		int quant = 0;
+
+		Item[] items = event.getItemContainer().getItems();
+		if (items == null)
+		{
+			inventoryItemCount = 0;
+		}
+		else
+		{
+			log.info("items length is " + items.length);
+			inventoryItemCount = items.length;
+		}
 
 		for (Item item : event.getItemContainer().getItems())
 		{
@@ -184,6 +302,7 @@ public class AutoMiner extends Plugin
 			iterating = false;
 			clearNames();
 		}
+
 	}
 
 	@Subscribe
