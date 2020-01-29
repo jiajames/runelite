@@ -18,7 +18,7 @@ import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.flexo.Flexo;
 
-import net.runelite.client.plugins.externals.itemdropper.ActionType;
+import net.runelite.client.plugins.autominer.ActionType;
 
 @Slf4j
 public class ExtUtils
@@ -89,7 +89,9 @@ public class ExtUtils
 	public static void handleSwitch(Rectangle rectangle, ActionType actionType, Flexo flexo, Client client, double scalingfactor)
 	{
 		Point cp = getClickPoint(rectangle, scalingfactor, client.isStretchedEnabled());
+		log.info(cp.getX() + " " + cp.getY());
 		Point tmp = client.getMouseCanvasPosition();
+		log.info(tmp.getX() + " " + tmp.getY());
 		java.awt.Point mousePos = new java.awt.Point(tmp.getX(), tmp.getY());
 
 		if (cp.getX() >= 1 && cp.getY() >= 1)
@@ -102,7 +104,9 @@ public class ExtUtils
 						flexo.mouseMove(cp.getX(), cp.getY());
 					}
 //					flexo.mousePressAndRelease(1);
-					leftClick(cp.getX(), cp.getY(), client, scalingfactor);
+					pauseMS(getMinDelay());
+										flexo.mousePressAndRelease(1);
+					//leftClick(cp.getX(), cp.getY(), client, scalingfactor);
 					break;
 				case MOUSEEVENTS:
 					if (!rectangle.contains(mousePos))
@@ -187,23 +191,38 @@ public class ExtUtils
 		client.getCanvas().dispatchEvent(mouseMoved);
 	}
 
+	private static int getRandomIntBetweenRange(int min, int max)
+	{
+		return (int) ((Math.random() * ((max - min) + 1)) + min);
+	}
+
 	private static Point getClickPoint(Rectangle rect, double scalingFactor, boolean stretchedMode)
 	{
+//		if (stretchedMode)
+//		{
+//			int rand = (Math.random() <= 0.5) ? 1 : 2;
+//			int x = (int) (rect.getX() + (rand * 3) + rect.getWidth() / 2);
+//			int y = (int) (rect.getY() + (rand * 3) + rect.getHeight() / 2);
+//			double scale = 1 + (scalingFactor / 100);
+//			return new Point((int) (x * scale), (int) (y * scale));
+//		}
+//		else
+//		{
+//			int rand = (Math.random() <= 0.5) ? 1 : 2;
+//			int x = (int) (rect.getX() + (rand * 3) + rect.getWidth() / 2);
+//			int y = (int) (rect.getY() + (rand * 3) + rect.getHeight() / 2);
+//			return new Point(x, y);
+//		}
+		int x = (int) (rect.getX() + getRandomIntBetweenRange((int) (rect.getWidth() / 6 * -1) + 1, (int) ((rect.getWidth() / 6) + rect.getWidth() / 2) - 1));
+		int y = (int) (rect.getY() + getRandomIntBetweenRange((int) (rect.getHeight() / 6 * -1) + 1, (int) ((rect.getHeight() / 6) + rect.getHeight() / 2) - 1));
+
 		if (stretchedMode)
 		{
-			int rand = (Math.random() <= 0.5) ? 1 : 2;
-			int x = (int) (rect.getX() + (rand * 3) + rect.getWidth() / 2);
-			int y = (int) (rect.getY() + (rand * 3) + rect.getHeight() / 2);
 			double scale = 1 + (scalingFactor / 100);
 			return new Point((int) (x * scale), (int) (y * scale));
 		}
-		else
-		{
-			int rand = (Math.random() <= 0.5) ? 1 : 2;
-			int x = (int) (rect.getX() + (rand * 3) + rect.getWidth() / 2);
-			int y = (int) (rect.getY() + (rand * 3) + rect.getHeight() / 2);
-			return new Point(x, y);
-		}
+
+		return new Point(x, y);
 	}
 
 	public static GameObject grabNearestObject(int id, List<GameObject> objects, java.awt.Point playerPoint)
